@@ -166,6 +166,55 @@ public class Piece {
     return false;
   }
 
+  public boolean pieceOnDiagonalLine(int targetCol, int targetRow){
+    if(targetRow < preRow){
+      // up left
+      for(int i = preCol - 1; i > targetCol; i--){
+        int diff = Math.abs(i - preCol);
+        for(Piece piece : GamePanel.simPieces){
+          if(piece.col == i && piece.row == preRow - diff){
+            hittingPiece = piece;
+            return true;
+          }
+        }
+      }
+      // up right
+      for(int i = preCol + 1; i < targetCol; i++){
+        int diff = Math.abs(i - preCol);
+        for(Piece piece : GamePanel.simPieces){
+          if(piece.col == i && piece.row == preRow - diff){
+            hittingPiece = piece;
+            return true;
+          }
+        }
+      }
+    }
+
+    if(targetRow > preRow){
+      // down left
+      for(int i = preCol - 1; i > targetCol; i--){
+        int diff = Math.abs(i - preCol);
+        for(Piece piece : GamePanel.simPieces){
+          if(piece.col == i && piece.row == preRow + diff){
+            hittingPiece = piece;
+            return true;
+          }
+        }
+      }
+      // down right
+      for(int i = preCol + 1; i < targetCol; i++){
+        int diff = Math.abs(i - preCol);
+        for(Piece piece : GamePanel.simPieces){
+          if(piece.col == i && piece.row == preRow + diff){
+            hittingPiece = piece;
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+
   public void draw(Graphics2D g2){
     // x and y is it's coordinate , and the width and height is the Board.square_size;
     g2.drawImage(image, x, y, getWidth() ,  getHeight(), null);
