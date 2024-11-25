@@ -27,6 +27,10 @@ public class GamePanel extends JPanel implements Runnable{
   public static ArrayList<Piece> simPieces = new ArrayList<>(); // used pieces
   Piece activePiece;
 
+  // Boolean
+  boolean canMove;
+  boolean validSquare;
+
   public GamePanel() {
     setPreferredSize(new Dimension(WIDTH, HEIGHT));
     setBackground(Color.BLACK);
@@ -51,7 +55,7 @@ public class GamePanel extends JPanel implements Runnable{
 
     // Rest of the white
     pieces.add(new Rook(WHITE, 0, 7));
-    pieces.add(new Rook(WHITE, 7, 7));
+    pieces.add(new Rook(WHITE, 7, 4));
     pieces.add(new Knight(WHITE, 1, 7));
     pieces.add(new Knight(WHITE, 6, 7));
     pieces.add(new Bishop(WHITE, 2, 7));
@@ -84,6 +88,7 @@ public class GamePanel extends JPanel implements Runnable{
       target.add(source.get(i));
     }
   }
+
   @Override
   public void run() {
     double drawInterval = 1000000000 / FPS;
@@ -110,31 +115,60 @@ public class GamePanel extends JPanel implements Runnable{
   public void update(){
     if(mouse.pressed){
       if(activePiece == null){ // means the player is not holding any piece
-        for(Piece piece : simPieces){ // iterate through all the pieces in the board, to find which one is being held
-          if(piece.color == currentColor &&
-                  piece.col == mouse.x / Board.square_size &&
-                  piece.row == mouse.y / Board.square_size){
-            activePiece = piece; // set the active piece
-          }
-        }
+        findPiece();
       }
       else{
-        simulate();
+        movePiece();
       }
     }
-    if(!mouse.pressed){
+    if(!mouse.pressed){ // means the player is holding a piece
       if(activePiece != null){
-        activePiece.updatePosition();
-        activePiece = null;
+        if(validSquare){
+          // if move is confirmed
+
+          // update the piece list, as the sim piece is for simulating the moving, pieces is for the regular placing if there's no movement
+          copyPieces(simPieces, pieces);
+          activePiece.updatePosition();
+        }
+        else {
+          copyPieces(pieces, simPieces); //restore if move is not confirmed
+          activePiece.resetPosition();
+          activePiece = null;
+        }
       }
     }
   }
 
-  public void simulate(){
+  public void movePiece(){
+    canMove = false;
+    validSquare = false;
+    // restoring removed piece every frame
+    copyPieces(pieces, simPieces); // don't confirm the new pieces until you move is confirm
+
+
     activePiece.x = mouse.x - Board.half_square_size;
     activePiece.y = mouse.y - Board.half_square_size;
     activePiece.row = activePiece.getRow(activePiece.y);
     activePiece.col = activePiece.getCol(activePiece.x);
+
+    if(activePiece.canMove(activePiece.col, activePiece.row)){
+      canMove = true;
+
+      if(activePiece.hittingPiece != null){
+        simPieces.remove(activePiece.hittingPiece.getIndex());
+      }
+      validSquare = true;
+    }
+  }
+
+  public void findPiece(){
+    for(Piece piece : simPieces){ // iterate through all the pieces in the board, to find which one is being held
+      if(piece.color == currentColor &&
+              piece.col == mouse.x / Board.square_size &&
+              piece.row == mouse.y / Board.square_size){
+        activePiece = piece; // set the active piece
+      }
+    }
   }
 
   // used to draw objects in the panel
@@ -150,6 +184,15 @@ public class GamePanel extends JPanel implements Runnable{
     for(Piece p : pieces){
       p.draw(g2);
     }
-  }
 
+    if(activePiece != null){
+      if(canMove){
+        g2.setColor(Color.white);
+        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.7f));
+        g2.fillRect(activePiece.col * Board.square_size, activePiece.row * Board.square_size, Board.square_size, Board.square_size);
+        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
+      }
+      activePiece.draw(g2);
+    }
+  }
 }
