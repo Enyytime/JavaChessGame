@@ -15,6 +15,7 @@ public class Piece {
   public int col, row, preRow, preCol;
   public int color;
   public Piece hittingPiece;
+  public boolean moved;
   // instantiate
   public Piece(int color, int col, int row ){
     this.color = color;
@@ -67,6 +68,7 @@ public class Piece {
     y = getY(row);
     preCol = col;
     preRow = row;
+    moved = true;
   }
 
   public boolean canMove(int targetCol, int targetRow){
@@ -214,6 +216,8 @@ public class Piece {
     }
     return false;
   }
+
+
 
   public void draw(Graphics2D g2){
     // x and y is it's coordinate , and the width and height is the Board.square_size;
